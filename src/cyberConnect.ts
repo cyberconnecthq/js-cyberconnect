@@ -11,7 +11,7 @@ import { IDX } from '@ceramicstudio/idx';
 import { endpoints } from './network';
 import { follow, unfollow, setAlias } from './queries';
 import { ConnectError, ErrorCode } from './error';
-import { Endpoint, Blockchain, CyberConnetStore, Config } from './types';
+import { Endpoint, Blockchain, CyberConnectStore, Config } from './types';
 import { getAddressByProvider } from './utils';
 import { Caip10Link } from '@ceramicnetwork/stream-caip10-link';
 import { Env } from '.';
@@ -251,7 +251,7 @@ class CyberConnect {
     try {
       const result = (await this.idxInstance.get(
         'cyberConnect'
-      )) as CyberConnetStore;
+      )) as CyberConnectStore;
 
       return result?.outboundLink || [];
     } catch (e) {

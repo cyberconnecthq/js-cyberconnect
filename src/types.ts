@@ -20,7 +20,7 @@ export type SolananChainRef =
   | typeof solana.SOLANA_MAINNET_CHAIN_REF
   | typeof solana.SOLANA_TESTNET_CHAIN_REF;
 
-export interface CyberConnetStore {
+export interface CyberConnectStore {
   outboundLink: Connections;
 }
 
