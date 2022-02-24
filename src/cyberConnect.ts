@@ -9,7 +9,13 @@ import { fromString } from 'uint8arrays';
 import { DID } from 'dids';
 import { IDX } from '@ceramicstudio/idx';
 import { endpoints } from './network';
-import { follow, registerSigningKey, setAlias, unfollow } from './queries';
+import {
+  follow,
+  batchFollow,
+  registerSigningKey,
+  setAlias,
+  unfollow,
+} from './queries';
 import { ConnectError, ErrorCode } from './error';
 import {
   Blockchain,
@@ -411,7 +417,6 @@ class CyberConnect {
         toAddr: targetAddr,
         alias,
         namespace: this.namespace,
-        url: this.endpoint.cyberConnectApi,
         signature,
         signingKey: publicKey,
         operation: JSON.stringify(operation),
@@ -420,7 +425,7 @@ class CyberConnect {
 
       // const sign = await this.signWithJwt();
 
-      const resp = await follow(params);
+      const resp = await follow(params, this.endpoint.cyberConnectApi);
 
       if (resp?.data?.connect.result === 'INVALID_SIGNATURE') {
         await clearSigningKey();
@@ -442,6 +447,78 @@ class CyberConnect {
     }
     if (DFLAG) {
       this.ceramicConnect(targetAddr, alias);
+    }
+  }
+
+  async batchConnect(targetAddrs: string[]) {
+    try {
+      this.address = await this.getAddress();
+      await this.authWithSigningKey();
+
+      const timestamp = Date.now();
+      const signPromises: Promise<{
+        toAddr: string;
+        signature: string;
+        operation: string;
+      }>[] = [];
+
+      targetAddrs.forEach((addr) => {
+        const operation: Operation = {
+          name: 'follow',
+          from: this.address,
+          to: addr,
+          namespace: this.namespace,
+          network: this.chain,
+          timestamp,
+        };
+
+        signPromises.push(
+          new Promise(async (resolve) => {
+            const signature = await signWithSigningKey(
+              JSON.stringify(operation),
+              this.address,
+            );
+            resolve({
+              toAddr: addr,
+              signature,
+              operation: JSON.stringify(operation),
+            });
+          }),
+        );
+      });
+
+      const signingInputs = await Promise.all(signPromises);
+      const publicKey = await getPublicKey(this.address);
+
+      const params = {
+        fromAddr: this.address,
+        namespace: this.namespace,
+        signingInputs,
+        signingKey: publicKey,
+        network: this.chain,
+      };
+
+      const resp = await batchFollow(params, this.endpoint.cyberConnectApi);
+
+      if (resp?.data?.batchConnect.result === 'INVALID_SIGNATURE') {
+        await clearSigningKey();
+
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.batchConnect.result,
+        );
+      }
+
+      if (resp?.data?.batchConnect.result !== 'SUCCESS') {
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.batchConnect.result,
+        );
+      }
+
+      return resp?.data?.batchConnect;
+    } catch (e: any) {
+      throw new ConnectError(ErrorCode.GraphqlError, e.message || e);
     }
   }
 
@@ -471,7 +548,6 @@ class CyberConnect {
         toAddr: targetAddr,
         alias,
         namespace: this.namespace,
-        url: this.endpoint.cyberConnectApi,
         signature,
         signingKey: publicKey,
         operation: JSON.stringify(operation),
@@ -480,7 +556,7 @@ class CyberConnect {
 
       // const sign = await this.signWithJwt();
 
-      const resp = await unfollow(params);
+      const resp = await unfollow(params, this.endpoint.cyberConnectApi);
 
       if (resp?.data?.disconnect.result === 'INVALID_SIGNATURE') {
         await clearSigningKey();
@@ -531,7 +607,6 @@ class CyberConnect {
         toAddr: targetAddr,
         alias,
         namespace: this.namespace,
-        url: this.endpoint.cyberConnectApi,
         signature,
         signingKey: publicKey,
         operation: JSON.stringify(operation),
@@ -540,7 +615,7 @@ class CyberConnect {
 
       // const sign = await this.signWithJwt();
 
-      const resp = await setAlias(params);
+      const resp = await setAlias(params, this.endpoint.cyberConnectApi);
 
       if (resp?.data?.alias.result === 'INVALID_SIGNATURE') {
         await clearSigningKey();

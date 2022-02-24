@@ -62,6 +62,6 @@ export interface Operation {
   to: string;
   namespace: string;
   network: Blockchain;
-  alias: string;
+  alias?: string;
   timestamp: number;
 }

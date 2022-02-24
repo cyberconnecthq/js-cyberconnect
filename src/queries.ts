@@ -19,6 +19,18 @@ type UpdateConnectionInput = {
   network: string;
 };
 
+type BatchUpdateConnectionInput = {
+  fromAddr: string;
+  signingInputs: {
+    toAddr: string;
+    signature: string;
+    operation: string;
+  }[];
+  namespace: string;
+  signingKey: string;
+  network: string;
+};
+
 export const registerSigningKeySchema = (input: RegisterSigningKeyInput) => {
   return {
     operationName: 'registerKey',
@@ -40,6 +52,23 @@ export const connectQuerySchema = (input: UpdateConnectionInput) => {
   };
 };
 
+export const batchConnectQuerySchema = (input: BatchUpdateConnectionInput) => {
+  return {
+    operationName: 'batchConnect',
+    query: `mutation batchConnect($input: BatchUpdateConnectionInput!) {
+      batchConnect(input: $input) {
+        result
+        alreadyFollowed
+        successFollowed
+        failToFollow
+      }
+    }`,
+    variables: {
+      input,
+    },
+  };
+};
+
 export const disconnectQuerySchema = (input: UpdateConnectionInput) => {
   return {
     operationName: 'disconnect',
@@ -49,6 +78,7 @@ export const disconnectQuerySchema = (input: UpdateConnectionInput) => {
     },
   };
 };
+
 export const setAliasQuerySchema = (input: UpdateConnectionInput) => {
   return {
     operationName: 'alias',
@@ -82,6 +112,7 @@ export const authSchema = ({
 
 export const querySchemas = {
   connect: connectQuerySchema,
+  batchConnect: batchConnectQuerySchema,
   disconnect: disconnectQuerySchema,
   auth: authSchema,
   setAlias: setAliasQuerySchema,
@@ -150,104 +181,22 @@ export const auth = ({
   return handleQuery(result, url);
 };
 
-export const follow = ({
-  fromAddr,
-  toAddr,
-  alias,
-  namespace,
-  url,
-  signature,
-  operation,
-  signingKey,
-  network = Blockchain.ETH,
-}: {
-  fromAddr: string;
-  toAddr: string;
-  alias: string;
-  namespace: string;
-  signature: string;
-  url: string;
-  operation: string;
-  signingKey: string;
-  network: Blockchain;
-}) => {
-  const schema = querySchemas['connect']({
-    fromAddr,
-    toAddr,
-    alias,
-    namespace,
-    signature,
-    operation,
-    signingKey,
-    network,
-  });
+export const follow = (input: UpdateConnectionInput, url: string) => {
+  const schema = querySchemas['connect'](input);
   return handleQuery(schema, url);
 };
 
-export const unfollow = ({
-  fromAddr,
-  toAddr,
-  alias,
-  namespace,
-  url,
-  signature,
-  operation,
-  signingKey,
-  network = Blockchain.ETH,
-}: {
-  fromAddr: string;
-  toAddr: string;
-  alias: string;
-  namespace: string;
-  signature: string;
-  url: string;
-  operation: string;
-  signingKey: string;
-  network: Blockchain;
-}) => {
-  const schema = querySchemas['disconnect']({
-    fromAddr,
-    toAddr,
-    alias,
-    namespace,
-    signature,
-    operation,
-    signingKey,
-    network,
-  });
+export const batchFollow = (input: BatchUpdateConnectionInput, url: string) => {
+  const schema = querySchemas['batchConnect'](input);
   return handleQuery(schema, url);
 };
 
-export const setAlias = ({
-  fromAddr,
-  toAddr,
-  alias,
-  namespace,
-  url,
-  signature,
-  operation,
-  signingKey,
-  network = Blockchain.ETH,
-}: {
-  fromAddr: string;
-  toAddr: string;
-  alias: string;
-  namespace: string;
-  signature: string;
-  url: string;
-  operation: string;
-  signingKey: string;
-  network: Blockchain;
-}) => {
-  const schema = querySchemas['setAlias']({
-    fromAddr,
-    toAddr,
-    alias,
-    namespace,
-    signature,
-    operation,
-    signingKey,
-    network,
-  });
+export const unfollow = (input: UpdateConnectionInput, url: string) => {
+  const schema = querySchemas['disconnect'](input);
+  return handleQuery(schema, url);
+};
+
+export const setAlias = (input: UpdateConnectionInput, url: string) => {
+  const schema = querySchemas['setAlias'](input);
   return handleQuery(schema, url);
 };
