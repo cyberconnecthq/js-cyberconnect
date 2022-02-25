@@ -28,6 +28,7 @@ export interface ConfigBase {
   namespace: string;
   env?: keyof typeof Env;
   provider: any;
+  clientType?: CLIENT_TYPE.RN | CLIENT_TYPE.WEB;
 }
 
 export interface ConfigEth {
@@ -63,4 +64,9 @@ export interface Operation {
   network: Blockchain;
   alias: string;
   timestamp: number;
+}
+
+export enum CLIENT_TYPE {
+  WEB = 'WEB',
+  RN = 'RN',
 }

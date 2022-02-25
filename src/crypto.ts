@@ -1,34 +1,4 @@
-import { openDB } from 'idb';
-
-let dbPromise: any = null;
-
-if (typeof window !== 'undefined' && typeof window.indexedDB !== 'undefined') {
-  dbPromise = openDB('CyberConnect', 1, {
-    upgrade(db) {
-      db.createObjectStore('store');
-    },
-  });
-}
-
-export async function get(key: string) {
-  if (dbPromise) {
-    return (await dbPromise).get('store', key);
-  }
-
-  return;
-}
-
-export async function set(key: string, val: CryptoKeyPair) {
-  if (dbPromise) {
-    return (await dbPromise).put('store', val, key);
-  }
-
-  return;
-}
-
-export async function clear() {
-  return (await dbPromise).clear('store');
-}
+import { set, get, clear } from './DB';
 
 export async function clearSigningKey() {
   await clear();
@@ -44,7 +14,7 @@ export async function generateSigningKey() {
     name: 'ECDSA',
     namedCurve: 'P-256',
   };
-  const extractable = false;
+  const extractable = true;
   const keyUsages: KeyUsage[] = ['sign', 'verify'];
 
   const signingKey = await window.crypto.subtle.generateKey(

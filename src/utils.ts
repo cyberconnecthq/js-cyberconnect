@@ -1,7 +1,10 @@
-import { Blockchain } from './types';
+import { Blockchain, CLIENT_TYPE } from './types';
 import bs58 from 'bs58';
 import { hexlify } from '@ethersproject/bytes';
 import { toUtf8Bytes } from '@ethersproject/strings';
+import { CURRENT_CLIENT_TYPE } from './cyberConnect';
+
+const isRN = () => CURRENT_CLIENT_TYPE === CLIENT_TYPE.RN;
 
 export const encodeRpcMessage = (method: string, params?: any) => {
   return {
@@ -60,6 +63,11 @@ export const getAddressByProvider = async (
 ) => {
   switch (chain) {
     case Blockchain.ETH: {
+      // rn connector
+      if (isRN()) {
+        return provider.accounts[0];
+      }
+
       // ethers Web3Provider
       if (typeof provider.getSigner === 'function') {
         const signer = provider.getSigner();
@@ -91,6 +99,14 @@ export const getSigningKeySignature = async (
   address: string,
 ) => {
   if (chain === Blockchain.ETH) {
+    // rn connector
+    if (isRN()) {
+      return await provider.signPersonalMessage([
+        hexlify(toUtf8Bytes(message)),
+        address,
+      ]);
+    }
+
     if (provider.isAuthereum) {
       return provider.signMessageWithSigningKey(message);
     }

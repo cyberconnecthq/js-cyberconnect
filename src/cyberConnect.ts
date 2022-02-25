@@ -17,6 +17,7 @@ import {
   CyberConnectStore,
   Endpoint,
   Operation,
+  CLIENT_TYPE,
 } from './types';
 import { getAddressByProvider, getSigningKeySignature } from './utils';
 import { Caip10Link } from '@ceramicnetwork/stream-caip10-link';
@@ -29,6 +30,7 @@ import {
   signWithSigningKey,
 } from './crypto';
 
+export let CURRENT_CLIENT_TYPE: CLIENT_TYPE.WEB | CLIENT_TYPE.RN;
 class CyberConnect {
   address: string = '';
   namespace: string;
@@ -48,11 +50,19 @@ class CyberConnect {
   threeIdProvider: any = null;
 
   constructor(config: Config) {
-    const { provider, namespace, env, chainRef, chain } = config;
+    const {
+      provider,
+      namespace,
+      env,
+      chainRef,
+      chain,
+      clientType = CLIENT_TYPE.WEB,
+    } = config;
 
     if (!namespace) {
       throw new ConnectError(ErrorCode.EmptyNamespace);
     }
+    CURRENT_CLIENT_TYPE = clientType;
 
     this.namespace = namespace;
     this.endpoint = endpoints[env || Env.PRODUCTION];
@@ -68,7 +78,10 @@ class CyberConnect {
       ...threeIdResolver,
       ...keyDidResolver,
     };
-    delete window.localStorage[C_ACCESS_TOKEN_KEY];
+
+    if (CURRENT_CLIENT_TYPE === CLIENT_TYPE.WEB) {
+      delete window.localStorage[C_ACCESS_TOKEN_KEY];
+    }
   }
 
   async getAuthProvider() {
