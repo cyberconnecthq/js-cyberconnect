@@ -1,15 +1,20 @@
-import { set, get, clear } from './DB';
+import { set, get, clear, clearByAddr } from './DB';
+import { SIGNKEY_KEY } from './constant';
 
 export async function clearSigningKey() {
   await clear();
 }
 
-export async function rotateSigningKey() {
-  await clear();
-  return generateSigningKey();
+export async function clearSigningKeyByAddress(address: string) {
+  return await clearByAddr(SIGNKEY_KEY + address);
 }
 
-export async function generateSigningKey() {
+export async function rotateSigningKey(address: string) {
+  await clear();
+  return generateSigningKey(address);
+}
+
+export async function generateSigningKey(address: string) {
   const algorithm = {
     name: 'ECDSA',
     namedCurve: 'P-256',
@@ -23,27 +28,27 @@ export async function generateSigningKey() {
     keyUsages,
   );
 
-  set('signingKey', signingKey).then();
+  set(SIGNKEY_KEY + address, signingKey).then();
 
   return signingKey;
 }
 
-export async function hasSigningKey() {
-  return await get('signingKey');
+export async function hasSigningKey(address: string) {
+  return await get(SIGNKEY_KEY + address);
 }
 
-export async function getSigningKey() {
-  let signingKey = await get('signingKey');
+export async function getSigningKey(address: string) {
+  let signingKey = await get(SIGNKEY_KEY + address);
 
   if (!signingKey) {
-    signingKey = generateSigningKey();
+    signingKey = generateSigningKey(address);
   }
 
   return signingKey;
 }
 
-export async function getPublicKey() {
-  const signingKey = await getSigningKey();
+export async function getPublicKey(address: string) {
+  const signingKey = await getSigningKey(address);
   const exported = await window.crypto.subtle.exportKey(
     'spki',
     signingKey.publicKey,
@@ -52,8 +57,8 @@ export async function getPublicKey() {
   return window.btoa(arrayBuffer2String(exported));
 }
 
-export async function signWithSigningKey(input: string) {
-  const signingKey = await getSigningKey();
+export async function signWithSigningKey(input: string, address: string) {
+  const signingKey = await getSigningKey(address);
   const algorithm = {
     name: 'ECDSA',
     hash: {

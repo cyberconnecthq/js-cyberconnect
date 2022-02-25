@@ -29,6 +29,7 @@ export interface ConfigBase {
   env?: keyof typeof Env;
   provider: any;
   clientType?: CLIENT_TYPE.RN | CLIENT_TYPE.WEB;
+  signingMessageEntity?: string;
 }
 
 export interface ConfigEth {
@@ -62,7 +63,7 @@ export interface Operation {
   to: string;
   namespace: string;
   network: Blockchain;
-  alias: string;
+  alias?: string;
   timestamp: number;
 }
 

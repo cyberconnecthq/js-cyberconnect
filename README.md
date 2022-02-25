@@ -28,6 +28,7 @@ const cyberConnect = new CyberConnect({
   env: Env.Production,
   chain: Blockchain.ETH,
   provider: provider,
+  signingMessageEntity: 'CyberConnect' || your entity,
 });
 ```
 
@@ -35,6 +36,7 @@ const cyberConnect = new CyberConnect({
 - `env` - (optional) Env decides the endpoints. Now we have `staging` and `production`. (The default value is `Env.Production`).
 - `chain` - (optional) The blockchain you want to connect with. Now we support `ethereum` and `solana`. (The default is `Blockchain.ETH`).
 - `provider` - The corresponding provider of the given chain.
+- `signingMessageEntity` - (optional) Use to describe the entity users sign their message with. Users will see it when authorizing in the wallet `I authorize ${signingMessageEntity} from this device using signing key:`. The default entity is `CyberConnect`.
 
 See [Solana](#Solana) for Solana demo.
 
@@ -48,7 +50,7 @@ Only first time users need to sign for `Capi10Link` and it may takes 5-10 second
 
 Only authenticate once if call `cyberconnect.authenticate()` multiple time.
 
-You can run `cyberconnect.authenticate()` somewhere before doing `connect` to do the authentication first, then the user doesn't need to sign when calling `connect`. 
+You can run `cyberconnect.authenticate()` somewhere before doing `connect` to do the authentication first, then the user doesn't need to sign when calling `connect`.
 
 You can also call `connect` directly, then the user have to sign during the function call.
 
