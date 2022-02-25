@@ -64,6 +64,7 @@ class CyberConnect {
       chainRef,
       chain,
       clientType = CLIENT_TYPE.WEB,
+      signingMessageEntity = '',
     } = config;
 
     if (!namespace) {

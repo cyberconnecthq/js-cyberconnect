@@ -36,6 +36,10 @@ const setIDB = async (key: string, val: CryptoKeyPair) => {
   return;
 };
 
+const clearIDBByAddress = async (key: string) => {
+  return (await dbPromise).delete('store', key);
+};
+
 const clearIDB = async () => {
   return (await dbPromise).clear('store');
 };
@@ -49,6 +53,8 @@ const getASG = (key: string) =>
   AsyncStorage.getItem(key).then((data: any) => JSON.parse(data));
 
 const clearASG = () => AsyncStorage.clear();
+
+const clearASGByKey = (k: string) => AsyncStorage.removeItem(k);
 
 const set = (...args: [string, CryptoKeyPair]) => {
   if (isRN()) {
@@ -74,4 +80,11 @@ const clear = () => {
   return clearIDB();
 };
 
-export { clear, set, get };
+const clearByAddr = (key: string) => {
+  if (isRN()) {
+    return clearASGByKey(key);
+  }
+  return clearIDBByAddress(key);
+};
+
+export { clear, set, get, clearByAddr };
