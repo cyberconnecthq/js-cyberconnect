@@ -9,7 +9,7 @@ const isRN = () => CURRENT_CLIENT_TYPE === CLIENT_TYPE.RN;
 let dbPromise: any = null;
 
 if (
-  isRN() &&
+  !isRN() &&
   typeof window !== 'undefined' &&
   typeof window.indexedDB !== 'undefined'
 ) {
