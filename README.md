@@ -21,7 +21,7 @@ yarn add @cyberlab/cyberconnect
 import CyberConnect, {
   Env,
   Blockchain,
-} from 'npm install @cyberlab/cyberconnect';
+} from '@cyberlab/cyberconnect';
 
 const cyberConnect = new CyberConnect({
   namespace: 'CyberConnect',
