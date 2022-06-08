@@ -5,6 +5,7 @@ import {
   registerSigningKey,
   setAlias,
   unfollow,
+  biConnect,
 } from './queries';
 import { ConnectError, ErrorCode } from './error';
 import {
@@ -14,6 +15,7 @@ import {
   Operation,
   ConnectionType,
   OperationName,
+  BiConnectionType,
 } from './types';
 import { getAddressByProvider, getSigningKeySignature } from './utils';
 import { Env } from '.';
@@ -290,6 +292,61 @@ class CyberConnect {
         throw new ConnectError(
           ErrorCode.GraphqlError,
           resp?.data?.alias.result,
+        );
+      }
+    } catch (e: any) {
+      throw new ConnectError(ErrorCode.GraphqlError, e.message || e);
+    }
+  }
+
+  async bidirectionalConnect(
+    targetAddr: string,
+    biConnectType: BiConnectionType,
+  ) {
+    try {
+      this.address = await this.getAddress();
+      await this.authWithSigningKey();
+      const operation: Operation = {
+        name: biConnectType,
+        from: this.address,
+        to: targetAddr,
+        namespace: this.namespace,
+        network: this.chain,
+        timestamp: Date.now(),
+      };
+
+      const signature = await signWithSigningKey(
+        JSON.stringify(operation),
+        this.address,
+      );
+      const publicKey = await getPublicKey(this.address);
+
+      const params = {
+        fromAddr: this.address,
+        toAddr: targetAddr,
+        namespace: this.namespace,
+        signature,
+        signing_key: publicKey,
+        operation: JSON.stringify(operation),
+        network: this.chain,
+        instruction: biConnectType,
+      };
+
+      const resp = await biConnect(params, this.endpoint.cyberConnectApi);
+
+      if (resp?.data?.connect.result === 'INVALID_SIGNATURE') {
+        await clearSigningKey();
+
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.bidirectionalConnect.result,
+        );
+      }
+
+      if (resp?.data?.bidirectionalConnect.result !== 'SUCCESS') {
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.bidirectionalConnect.message,
         );
       }
     } catch (e: any) {

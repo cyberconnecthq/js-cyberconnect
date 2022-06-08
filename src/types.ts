@@ -49,7 +49,14 @@ export interface Endpoint {
   cyberConnectApi: string;
 }
 
-export type OperationName = 'follow' | 'like' | 'report' | 'watch' | 'vote';
+export type OperationName =
+  | 'follow'
+  | 'like'
+  | 'report'
+  | 'watch'
+  | 'vote'
+  | 'unfollow'
+  | BiConnectionType;
 
 export enum ConnectionType {
   FOLLOW = 'FOLLOW',
@@ -58,8 +65,9 @@ export enum ConnectionType {
   WATCH = 'WATCH',
   VOTE = 'VOTE',
 }
+
 export interface Operation {
-  name: OperationName | 'unfollow';
+  name: OperationName;
   from: string;
   to: string;
   namespace: string;
@@ -67,4 +75,59 @@ export interface Operation {
   alias?: string;
   timestamp: number;
   connectionType?: ConnectionType;
+}
+
+export enum BiConnectionType {
+  INIT = 'INIT',
+  ACCEPT = 'ACCEPT',
+  REJECT = 'REJECT',
+  TERMINATE = 'TERMINATE',
+  BLOCK = 'BLOCK',
+  UNBLOCK = 'UNBLOCK',
+}
+
+// Mutation input types
+
+export interface RegisterSigningKeyInput {
+  address: string;
+  message: string;
+  signature: string;
+  network: string;
+}
+
+export interface UpdateConnectionInput {
+  fromAddr: string;
+  toAddr: string;
+  namespace: string;
+  signature: string;
+  operation: string;
+  signingKey: string;
+  alias?: string;
+  network: string;
+  type?: ConnectionType;
+}
+
+export interface BatchUpdateConnectionInput {
+  fromAddr: string;
+  signingInputs: {
+    toAddr: string;
+    signature: string;
+    operation: string;
+  }[];
+  namespace: string;
+  signingKey: string;
+  network: Blockchain;
+  type?: ConnectionType;
+}
+
+export interface BiConnectInput {
+  fromAddr: string;
+  toAddr: string;
+  namespace: string;
+  signature: string;
+  operation: string;
+  signing_key: string;
+  network: string;
+  type?: ConnectionType;
+  instruction: BiConnectionType;
 }
