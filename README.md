@@ -97,7 +97,7 @@ cyberConnect.setAlias(targetAddr, alias);
 ### BidirectionalConnect
 
 ```jsx
-cyberConnect.bidirectionalConnect(targetAddr, biConnectType);
+cyberConnect.bidirectionalConnect(targetAddr, biConnectionType);
 ```
 
 - `targetAddr` - The target wallet address to disconnect.

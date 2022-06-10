@@ -304,13 +304,13 @@ class CyberConnect {
 
   async bidirectionalConnect(
     targetAddr: string,
-    biConnectType: BiConnectionType,
+    biConnectionType: BiConnectionType,
   ) {
     try {
       this.address = await this.getAddress();
       await this.authWithSigningKey();
       const operation: Operation = {
-        name: biConnectType,
+        name: biConnectionType,
         from: this.address,
         to: targetAddr,
         namespace: this.namespace,
@@ -332,7 +332,7 @@ class CyberConnect {
         signingKey: publicKey,
         operation: JSON.stringify(operation),
         network: this.chain,
-        instruction: biConnectType,
+        instruction: biConnectionType,
       };
 
       const resp = await biConnect(params, this.endpoint.cyberConnectApi);
