@@ -56,7 +56,9 @@ export type OperationName =
   | 'watch'
   | 'vote'
   | 'unfollow'
-  | BiConnectionType;
+  | BiConnectionType
+  | 'ack_notifications'
+  | 'ack_all_notifications';
 
 export enum ConnectionType {
   FOLLOW = 'FOLLOW',
@@ -75,6 +77,15 @@ export interface Operation {
   alias?: string;
   timestamp: number;
   connectionType?: ConnectionType;
+}
+
+export interface NotificationOperation {
+  name: OperationName;
+  from: string;
+  namespace: string;
+  network: Blockchain;
+  timestamp: number;
+  notificationIds?: string[];
 }
 
 export enum BiConnectionType {
@@ -126,8 +137,28 @@ export interface BiConnectInput {
   namespace: string;
   signature: string;
   operation: string;
-  signing_key: string;
+  signingKey: string;
   network: string;
   type?: ConnectionType;
   instruction: BiConnectionType;
+}
+
+export interface AckNotificationsInput {
+  address: string;
+  namespace: string;
+  signature: string;
+  operation: string;
+  signingKey: string;
+  network: string;
+  notificationIds: string[];
+}
+
+export interface AckAllNotificationsInput {
+  address: string;
+  namespace: string;
+  signature: string;
+  operation: string;
+  signingKey: string;
+  network: string;
+  timestamp: string;
 }

@@ -4,6 +4,8 @@ import {
   UpdateConnectionInput,
   BatchUpdateConnectionInput,
   BiConnectInput,
+  AckNotificationsInput,
+  AckAllNotificationsInput,
 } from './types';
 export type Query = 'connect' | 'disconnect';
 
@@ -81,6 +83,36 @@ export const bidirectionalConnectQuerySchema = (input: BiConnectInput) => {
   };
 };
 
+export const ackNotificationsQuerySchema = (input: AckNotificationsInput) => {
+  return {
+    operationName: 'ackNotifications',
+    query: `mutation ackNotifications($input: AckNotificationsInput!) {
+      ackNotifications(input: $input) {
+        result
+      }
+    }`,
+    variables: {
+      input,
+    },
+  };
+};
+
+export const ackAllNotificationsQuerySchema = (
+  input: AckAllNotificationsInput,
+) => {
+  return {
+    operationName: 'ackAllNotifications',
+    query: `mutation ackAllNotifications($input: AckAllNotificationsInput!) {
+      ackAllNotifications(input: $input) {
+        result
+      }
+    }`,
+    variables: {
+      input,
+    },
+  };
+};
+
 export const authSchema = ({
   address,
   signature,
@@ -110,6 +142,8 @@ export const querySchemas = {
   auth: authSchema,
   setAlias: setAliasQuerySchema,
   registerSigningKey: registerSigningKeySchema,
+  ackNotifications: ackNotificationsQuerySchema,
+  ackAllNotifications: ackAllNotificationsQuerySchema,
 };
 
 export const request = async (url = '', data = {}) => {
@@ -196,5 +230,18 @@ export const setAlias = (input: UpdateConnectionInput, url: string) => {
 
 export const biConnect = (input: BiConnectInput, url: string) => {
   const schema = querySchemas['biConnect'](input);
+  return handleQuery(schema, url);
+};
+
+export const ackNotifications = (input: AckNotificationsInput, url: string) => {
+  const schema = querySchemas['ackNotifications'](input);
+  return handleQuery(schema, url);
+};
+
+export const ackAllNotifications = (
+  input: AckAllNotificationsInput,
+  url: string,
+) => {
+  const schema = querySchemas['ackAllNotifications'](input);
   return handleQuery(schema, url);
 };

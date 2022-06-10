@@ -6,6 +6,8 @@ import {
   setAlias,
   unfollow,
   biConnect,
+  ackNotifications,
+  ackAllNotifications,
 } from './queries';
 import { ConnectError, ErrorCode } from './error';
 import {
@@ -16,6 +18,7 @@ import {
   ConnectionType,
   OperationName,
   BiConnectionType,
+  NotificationOperation,
 } from './types';
 import { getAddressByProvider, getSigningKeySignature } from './utils';
 import { Env } from '.';
@@ -326,7 +329,7 @@ class CyberConnect {
         toAddr: targetAddr,
         namespace: this.namespace,
         signature,
-        signing_key: publicKey,
+        signingKey: publicKey,
         operation: JSON.stringify(operation),
         network: this.chain,
         instruction: biConnectType,
@@ -334,7 +337,7 @@ class CyberConnect {
 
       const resp = await biConnect(params, this.endpoint.cyberConnectApi);
 
-      if (resp?.data?.connect.result === 'INVALID_SIGNATURE') {
+      if (resp?.data?.bidirectionalConnect.result === 'INVALID_SIGNATURE') {
         await clearSigningKey();
 
         throw new ConnectError(
@@ -347,6 +350,119 @@ class CyberConnect {
         throw new ConnectError(
           ErrorCode.GraphqlError,
           resp?.data?.bidirectionalConnect.message,
+        );
+      }
+    } catch (e: any) {
+      throw new ConnectError(ErrorCode.GraphqlError, e.message || e);
+    }
+  }
+
+  async ackNotifications(notificationIds: string[]) {
+    try {
+      this.address = await this.getAddress();
+      await this.authWithSigningKey();
+      const operation: NotificationOperation = {
+        name: 'ack_notifications',
+        from: this.address,
+        namespace: this.namespace,
+        network: this.chain,
+        notificationIds: notificationIds,
+        timestamp: Date.now(),
+      };
+
+      const signature = await signWithSigningKey(
+        JSON.stringify(operation),
+        this.address,
+      );
+      const publicKey = await getPublicKey(this.address);
+
+      const params = {
+        address: this.address,
+        namespace: this.namespace,
+        signature,
+        signingKey: publicKey,
+        operation: JSON.stringify(operation),
+        network: this.chain,
+        notificationIds,
+      };
+
+      console.log('params', params);
+
+      const resp = await ackNotifications(
+        params,
+        this.endpoint.cyberConnectApi,
+      );
+
+      if (resp?.data?.ackNotifications.result === 'INVALID_SIGNATURE') {
+        await clearSigningKey();
+
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.ackNotifications.result,
+        );
+      }
+
+      if (resp?.data?.ackNotifications.result !== 'SUCCESS') {
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.ackNotifications.result,
+        );
+      }
+    } catch (e: any) {
+      throw new ConnectError(ErrorCode.GraphqlError, e.message || e);
+    }
+  }
+
+  async ackAllNotifications() {
+    try {
+      this.address = await this.getAddress();
+      await this.authWithSigningKey();
+      const timestamp = Date.now();
+
+      const operation: NotificationOperation = {
+        name: 'ack_all_notifications',
+        from: this.address,
+        namespace: this.namespace,
+        network: this.chain,
+        timestamp,
+      };
+
+      const signature = await signWithSigningKey(
+        JSON.stringify(operation),
+        this.address,
+      );
+      const publicKey = await getPublicKey(this.address);
+
+      const params = {
+        address: this.address,
+        namespace: this.namespace,
+        signature,
+        signingKey: publicKey,
+        operation: JSON.stringify(operation),
+        network: this.chain,
+        timestamp: timestamp.toString(),
+      };
+
+      console.log('params', params);
+
+      const resp = await ackAllNotifications(
+        params,
+        this.endpoint.cyberConnectApi,
+      );
+
+      if (resp?.data?.ackAllNotifications.result === 'INVALID_SIGNATURE') {
+        await clearSigningKey();
+
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.ackAllNotifications.result,
+        );
+      }
+
+      if (resp?.data?.ackAllNotifications.result !== 'SUCCESS') {
+        throw new ConnectError(
+          ErrorCode.GraphqlError,
+          resp?.data?.ackAllNotifications.result,
         );
       }
     } catch (e: any) {
