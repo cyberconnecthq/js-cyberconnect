@@ -497,7 +497,11 @@ class CyberConnect {
         message,
         this.address,
       );
+      
+
       if (signingKeySignature) {
+        this.signature = signingKeySignature;
+
         const resp = await registerSigningKey({
           address: this.address,
           signature: signingKeySignature,
