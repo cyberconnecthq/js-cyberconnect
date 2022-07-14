@@ -482,6 +482,7 @@ class CyberConnect {
     if (await hasSigningKey(this.address)) {
       return;
     }
+    this.address = await this.getAddress();
 
     const publicKey = await getPublicKey(this.address);
     const acknowledgement = `I authorize ${
@@ -489,7 +490,6 @@ class CyberConnect {
     } from this device using signing key:\n`;
     const message = `${acknowledgement}${publicKey}`;
 
-    this.address = await this.getAddress();
     try {
       const signingKeySignature = await getSigningKeySignature(
         this.provider,
