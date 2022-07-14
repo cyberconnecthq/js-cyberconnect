@@ -386,7 +386,6 @@ class CyberConnect {
         notificationIds,
       };
 
-      console.log('params', params);
 
       const resp = await ackNotifications(
         params,
@@ -443,7 +442,6 @@ class CyberConnect {
         timestamp: timestamp.toString(),
       };
 
-      console.log('params', params);
 
       const resp = await ackAllNotifications(
         params,
@@ -484,6 +482,7 @@ class CyberConnect {
     if (await hasSigningKey(this.address)) {
       return;
     }
+    this.address = await this.getAddress();
 
     const publicKey = await getPublicKey(this.address);
     const acknowledgement = `I authorize ${
@@ -491,7 +490,6 @@ class CyberConnect {
     } from this device using signing key:\n`;
     const message = `${acknowledgement}${publicKey}`;
 
-    this.address = await this.getAddress();
     try {
       const signingKeySignature = await getSigningKeySignature(
         this.provider,
@@ -499,7 +497,11 @@ class CyberConnect {
         message,
         this.address,
       );
+      
+
       if (signingKeySignature) {
+        this.signature = signingKeySignature;
+
         const resp = await registerSigningKey({
           address: this.address,
           signature: signingKeySignature,
@@ -517,6 +519,9 @@ class CyberConnect {
       } else {
         throw new Error('signingKeySignature is empty');
       }
+
+      return publicKey;
+      
     } catch (e) {
       clearSigningKeyByAddress(this.address);
       throw new Error('User cancel the sign process');
