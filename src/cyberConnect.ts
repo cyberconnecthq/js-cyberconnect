@@ -386,7 +386,6 @@ class CyberConnect {
         notificationIds,
       };
 
-      console.log('params', params);
 
       const resp = await ackNotifications(
         params,
@@ -443,7 +442,6 @@ class CyberConnect {
         timestamp: timestamp.toString(),
       };
 
-      console.log('params', params);
 
       const resp = await ackAllNotifications(
         params,
