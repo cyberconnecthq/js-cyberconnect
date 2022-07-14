@@ -519,6 +519,9 @@ class CyberConnect {
       } else {
         throw new Error('signingKeySignature is empty');
       }
+
+      return publicKey;
+      
     } catch (e) {
       clearSigningKeyByAddress(this.address);
       throw new Error('User cancel the sign process');
