@@ -18,7 +18,7 @@ declare class CyberConnect {
     ackNotifications(notificationIds: string[]): Promise<void>;
     ackAllNotifications(): Promise<void>;
     getAddress(): Promise<any>;
-    authWithSigningKey(): Promise<void>;
+    authWithSigningKey(): Promise<string | undefined>;
 }
 export default CyberConnect;
 //# sourceMappingURL=cyberConnect.d.ts.map
